@@ -4,12 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import Link from 'next/link'
-import { BookOpen } from 'lucide-react'
-import { Inter, Space_Grotesk } from 'next/font/google'
-
-const inter = Inter({ subsets: ['latin'] })
+import { Space_Grotesk } from 'next/font/google'
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'] })
 
 const questions = [
@@ -45,7 +40,7 @@ export default function SREJobSurvey() {
   const [answers, setAnswers] = useState({})
   const [showResult, setShowResult] = useState(false)
 
-  const handleAnswer = (answer) => {
+  const handleAnswer = (answer: any) => {
     setAnswers({ ...answers, [currentQuestion]: answer })
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1)
@@ -70,31 +65,9 @@ export default function SREJobSurvey() {
     visible: { y: 0, opacity: 1 },
     exit: { y: -50, opacity: 0 }
   }
-
+/* TODO: figure out how to make the survey center vertically */
   return (
-    <div className={`flex flex-col min-h-screen bg-[#0A0A0A] text-[#E2E8F0] ${inter.className}`}>
-      <header className="px-4 lg:px-6 h-14 flex items-center border-b border-[#1C1C1C]">
-        <Link className="flex items-center justify-center" href="/">
-          <BookOpen className="h-6 w-6 text-[#D97706]" />
-          <span className={`ml-2 text-lg font-bold ${spaceGrotesk.className}`}>IsItSRE?</span>
-        </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Link className="text-sm font-medium hover:text-[#D97706]" href="/">
-            Home
-          </Link>
-          <Link className="text-sm font-medium hover:text-[#D97706]" href="/about">
-            About
-          </Link>
-          <Link className="text-sm font-medium hover:text-[#D97706]" href="/recruiters">
-            Recruiters
-          </Link>
-          <Link className="text-sm font-medium hover:text-[#D97706]" href="/job-ads">
-            Job Ads
-          </Link>
-        </nav>
-      </header>
-
-      <main className="flex-1 flex flex-col items-center justify-center p-4">
+    <main className="flex-1 flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-2xl">
           <h1 className={`text-3xl font-bold text-center text-[#E2E8F0] mb-8 ${spaceGrotesk.className}`}>SRE Job Posting Survey</h1>
           <div className="w-full bg-[#2C2C2C] h-2 rounded-full mb-8">
@@ -158,18 +131,5 @@ export default function SREJobSurvey() {
           )}
         </div>
       </main>
-
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t border-[#1C1C1C]">
-        <p className="text-xs text-[#A0AEC0]">© 2024 IsItSRE? All rights reserved.</p>
-        <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-          <Link className="text-xs hover:text-[#D97706]" href="#">
-            Terms of Service
-          </Link>
-          <Link className="text-xs hover:text-[#D97706]" href="#">
-            Privacy
-          </Link>
-        </nav>
-      </footer>
-    </div>
   )
 }

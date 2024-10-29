@@ -3,7 +3,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
-import { Activity, AlertTriangle, BarChart, Box, Cpu, Database, GitBranch, GitMerge, LineChart, Monitor, Server, Settings, Zap, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react'
+import { ZoomIn, ZoomOut, RotateCcw, Settings, Eye, Database, BarChart, Activity, GitMerge, Zap, Cloud, Box, Network, Shield, AlertTriangle, Clock, FileCode, Search, Bell, Target, FileText, Phone, Server, Lock, BookOpen, Users, Globe } from 'lucide-react'
+import { FaAws, FaGoogle, FaMicrosoft, FaDocker, FaJenkins, FaGitlab, FaUserSecret, FaBalanceScale } from 'react-icons/fa'
+import { SiKubernetes, SiTerraform, SiAnsible, SiElasticsearch } from 'react-icons/si'
 import { Roboto } from 'next/font/google'
 
 const roboto = Roboto({
@@ -20,50 +22,161 @@ interface TreeNode {
 }
 
 const treeData: TreeNode = {
-  id: 'sre',
-  label: 'SRE',
-  icon: <Settings />,
-  children: [
-    {
-      id: 'monitoring',
-      label: 'Monitoring',
-      icon: <Monitor />,
-      children: [
-        { id: 'metrics', label: 'Metrics Collection', icon: <BarChart /> },
-        { id: 'alerting', label: 'Alerting', icon: <AlertTriangle /> },
-        { id: 'logging', label: 'Logging', icon: <Database /> },
-      ],
-    },
-    {
-      id: 'automation',
-      label: 'Automation',
-      icon: <Zap />,
-      children: [
-        { id: 'ci-cd', label: 'CI/CD', icon: <GitBranch /> },
-        { id: 'infrastructure-as-code', label: 'Infrastructure as Code', icon: <Box /> },
-      ],
-    },
-    {
-      id: 'reliability',
-      label: 'Reliability',
-      icon: <Activity />,
-      children: [
-        { id: 'fault-tolerance', label: 'Fault Tolerance', icon: <GitMerge /> },
-        { id: 'disaster-recovery', label: 'Disaster Recovery', icon: <Server /> },
-        { id: 'scalability', label: 'Scalability', icon: <Cpu /> },
-      ],
-    },
-    {
-      id: 'performance',
-      label: 'Performance',
-      icon: <LineChart />,
-      children: [
-        { id: 'latency-optimization', label: 'Latency Optimization', icon: <Zap /> },
-        { id: 'capacity-planning', label: 'Capacity Planning', icon: <BarChart /> },
-      ],
-    },
-  ],
-}
+    id: 'sre',
+    label: 'SRE',
+    icon: <Settings />,
+    children: [
+      {
+        id: 'observability',
+        label: 'Observability',
+        icon: <Eye />,
+        children: [
+          {
+            id: 'telemetry',
+            label: 'Telemetry',
+            icon: <Activity />,
+            children: [
+              { id: 'data-engineering', label: 'Data Engineering', icon: <Database /> },
+              { id: 'metrics-collection', label: 'Metrics Collection', icon: <BarChart /> },
+              { id: 'distributed-tracing', label: 'Distributed Tracing', icon: <GitMerge /> }
+            ]
+          },
+          {
+            id: 'logging',
+            label: 'Logging',
+            icon: <FileText />,
+            children: [
+              { id: 'log-aggregation', label: 'Log Aggregation', icon: <Database /> },
+              { id: 'log-analysis', label: 'Log Analysis', icon: <Search /> },
+              { id: 'elk-stack', label: 'ELK Stack', icon: <SiElasticsearch /> }
+            ]
+          },
+          {
+            id: 'monitoring',
+            label: 'Monitoring',
+            icon: <Activity />,
+            children: [
+              { id: 'alerting', label: 'Alerting', icon: <Bell /> },
+              { id: 'slis', label: 'Service Level Indicators (SLIs)', icon: <Target /> },
+              { id: 'slos', label: 'Service Level Objectives (SLOs)', icon: <Target /> }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'incident-management',
+        label: 'Incident Management',
+        icon: <AlertTriangle />,
+        children: [
+          {
+            id: 'postmortems',
+            label: 'Postmortems',
+            icon: <FileText />,
+            children: [
+              { id: 'root-cause-analysis', label: 'Root Cause Analysis', icon: <Search /> },
+              { id: 'blameless-culture', label: 'Blameless Culture', icon: <Users /> }
+            ]
+          },
+          {
+            id: 'on-call-management',
+            label: 'On-call Management',
+            icon: <Phone />,
+            children: [
+              { id: 'rotations', label: 'Rotations', icon: <Clock /> },
+              { id: 'escalation-policies', label: 'Escalation Policies', icon: <GitMerge /> }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'infrastructure',
+        label: 'Infrastructure',
+        icon: <Server />,
+        children: [
+          {
+            id: 'cloud-providers',
+            label: 'Cloud Providers',
+            icon: <Cloud />,
+            children: [
+              { id: 'aws', label: 'AWS', icon: <FaAws /> },
+              { id: 'gcp', label: 'GCP', icon: <FaGoogle /> },
+              { id: 'azure', label: 'Azure', icon: <FaMicrosoft /> }
+            ]
+          },
+          {
+            id: 'containerization',
+            label: 'Containerization',
+            icon: <Box />,
+            children: [
+              { id: 'docker', label: 'Docker', icon: <FaDocker /> },
+              { id: 'kubernetes', label: 'Kubernetes', icon: <SiKubernetes /> }
+            ]
+          },
+          {
+            id: 'networking',
+            label: 'Networking',
+            icon: <Network />,
+            children: [
+              { id: 'load-balancers', label: 'Load Balancers', icon: <Server /> },
+              { id: 'cdns', label: 'CDNs', icon: <Globe /> },
+              { id: 'dns-management', label: 'DNS Management', icon: <Server /> }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'automation',
+        label: 'Automation',
+        icon: <Zap />,
+        children: [
+          {
+            id: 'infrastructure-as-code',
+            label: 'Infrastructure as Code',
+            icon: <FileCode />,
+            children: [
+              { id: 'terraform', label: 'Terraform', icon: <SiTerraform /> },
+              { id: 'ansible', label: 'Ansible', icon: <SiAnsible /> }
+            ]
+          },
+          {
+            id: 'ci-cd',
+            label: 'Continuous Integration/Continuous Deployment (CI/CD)',
+            icon: <GitMerge />,
+            children: [
+              { id: 'jenkins', label: 'Jenkins', icon: <FaJenkins /> },
+              { id: 'gitlab-ci', label: 'GitLab CI', icon: <FaGitlab /> }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'security',
+        label: 'Security',
+        icon: <Shield />,
+        children: [
+          {
+            id: 'incident-response',
+            label: 'Incident Response',
+            icon: <AlertTriangle />,
+            children: [
+              { id: 'threat-modeling', label: 'Threat Modeling', icon: <Shield /> },
+              { id: 'vulnerability-management', label: 'Vulnerability Management', icon: <Lock /> }
+            ]
+          },
+          {
+            id: 'compliance',
+            label: 'Compliance',
+            icon: <FileText />,
+            children: [
+              { id: 'gdpr', label: 'GDPR', icon: <FaUserSecret /> },
+              { id: 'soc-2', label: 'SOC 2', icon: <FaBalanceScale /> }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+  
 
 const TreeNodeLabels: React.FC<{ node: TreeNode; x: number; y: number }> = ({ node, x, y }) => {
   const verticalLineLength = 60
@@ -77,6 +190,9 @@ const TreeNodeLabels: React.FC<{ node: TreeNode; x: number; y: number }> = ({ no
         </div>
       </foreignObject>
       {node.children?.map((child, index) => {
+        if (!node.children) {
+            return null
+        }
         const childX = x + (index - (node.children.length - 1) / 2) * 200
         const childY = y + 180
         return (
@@ -164,6 +280,9 @@ export default function SRETree() {
           />
         )}
         {node.children?.map((child, index) => {
+            if (!node.children) {
+                return null
+            }
           const childX = x + (index - (node.children.length - 1) / 2) * childrenSpacing
           const childY = y + levelSpacing
           const isChildLeaf = !child.children || child.children.length === 0
