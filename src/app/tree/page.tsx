@@ -1,18 +1,16 @@
 'use client'
 
 import React, { useState, useCallback, useEffect, useRef } from 'react'
-import { Activity, AlertTriangle, Cloud, Code, Lock, Server, Settings, ChevronRight } from 'lucide-react'
+import { Activity, AlertTriangle, Cloud, Code, Lock, Server, Settings, ZoomIn, ZoomOut, RefreshCw } from 'lucide-react'
 import * as d3 from 'd3'
 
-interface TreeNode extends d3.SimulationNodeDatum {
+interface TreeNode {
   id: string
   name: string
   children?: TreeNode[]
   _children?: TreeNode[]
   x?: number
   y?: number
-  labelWidth?: number
-  labelHeight?: number
   depth?: number
   parent?: TreeNode
 }
@@ -174,78 +172,48 @@ const getNodeIcon = (nodeName: string) => {
   }
 }
 
-const wrapText = (text: string, maxWidth: number) => {
-  const words = text.split(' ')
-  const lines: string[] = []
-  let currentLine = words[0]
-
-  for (let i = 1; i < words.length; i++) {
-    const word = words[i]
-    const width = getTextWidth(currentLine + " " + word)
-    if (width < maxWidth) {
-      currentLine += " " + word
-    } else {
-      lines.push(currentLine)
-      currentLine = word
-    }
-  }
-  lines.push(currentLine)
-  return lines
-}
-
-const getTextWidth = (text: string) => {
-  if (typeof document !== 'undefined') {
-    const canvas = document.createElement('canvas')
-    const context = canvas.getContext('2d')
-    if (context) {
-      context.font = '14px Arial'
-      return context.measureText(text).width
-    }
-  }
-  return 0
-}
-
-const TreeNode: React.FC<{ node: TreeNode; onNodeClick: (node: TreeNode) => void }> = ({ node, onNodeClick }) => {
-  const IconComponent = getNodeIcon(node.name)
-  const lines = wrapText(node.name, 150)
-  const lineHeight = 20
+const TreeNode: React.FC<{ node: d3.HierarchyPointNode<TreeNode>; onNodeClick: (node: d3.HierarchyPointNode<TreeNode>) => void }> = ({ node, onNodeClick }) => {
+  const IconComponent = getNodeIcon(node.data.name)
+  const isRoot = node.depth === 0
+  const hasHiddenChildren = node.data._children && node.data._children.length > 0
+  const isClickable = hasHiddenChildren
 
   return (
-    <g transform={`translate(${node.x},${node.y})`} onClick={() => onNodeClick(node)} style={{ cursor: 'pointer' }}>
-      <circle r={15} fill="#FF6B6B" />
-      <foreignObject width={20} height={20} x={-10} y={-10}>
+    <g
+      transform={`translate(${node.x},${node.y})`}
+      onClick={() => isClickable && onNodeClick(node)}
+      style={{ cursor: isClickable ? 'pointer' : 'default' }}
+    >
+      <circle r={isRoot ? 30 : 20} fill="#FF6B6B" />
+      <foreignObject width={isRoot ? 50 : 30} height={isRoot ? 50 : 30} x={isRoot ? -25 : -15} y={isRoot ? -25 : -15}>
         <div className="flex items-center justify-center w-full h-full">
-          <IconComponent size={16} color="#1a202c" />
+          <IconComponent size={isRoot ? 30 : 20} color="#1a202c" />
         </div>
       </foreignObject>
-      {lines.map((line, index) => (
-        <text key={index} fill="white" x={25} y={5 + index * lineHeight} style={{ fontSize: '14px' }}>
-          {line}
-        </text>
-      ))}
-      {node._children && (
-        <g transform="translate(15, 15)">
-          <circle r={10} fill="#4A5568" />
-          <ChevronRight size={16} color="white" style={{ transform: 'translate(-8px, -8px)' }} />
-        </g>
-      )}
+      <text
+        fill="white"
+        x={isRoot ? 40 : 30}
+        y={0}
+        dy=".35em"
+        style={{ fontSize: isRoot ? '18px' : '14px', fontWeight: 'bold' }}
+        textAnchor="start"
+        dominantBaseline="middle"
+      >
+        {node.data.name}
+      </text>
     </g>
   )
 }
 
-const LinkCurve: React.FC<{ link: d3.SimulationLinkDatum<TreeNode> }> = ({ link }) => {
-  const source = link.source as TreeNode
-  const target = link.target as TreeNode
-
-  if (!source.x || !source.y || !target.x || !target.y) return null
-
-  const dx = target.x - source.x
-  const dy = target.y - source.y
-  const dr = Math.sqrt(dx * dx + dy * dy)
+const LinkLine: React.FC<{ link: d3.HierarchyPointLink<TreeNode> }> = ({ link }) => {
+  const sourceX = link.source.x
+  const sourceY = link.source.y
+  const targetX = link.target.x
+  const targetY = link.target.y
 
   return (
     <path
-      d={`M${source.x},${source.y}A${dr},${dr} 0 0,1 ${target.x},${target.y}`}
+      d={`M${sourceX},${sourceY} L${targetX},${targetY}`}
       fill="none"
       stroke="#FF6B6B"
       strokeWidth={2}
@@ -254,80 +222,52 @@ const LinkCurve: React.FC<{ link: d3.SimulationLinkDatum<TreeNode> }> = ({ link 
 }
 
 export default function Component() {
-  const [nodes, setNodes] = useState<TreeNode[]>([])
-  const [links, setLinks] = useState<d3.SimulationLinkDatum<TreeNode>[]>([])
+  const [root, setRoot] = useState<d3.HierarchyPointNode<TreeNode> | null>(null)
   const [translate, setTranslate] = useState({ x: 0, y: 0 })
-  const [scale, setScale] = useState(0.5)
+  const [scale, setScale] = useState(1)
   const svgRef = useRef<SVGSVGElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [dragging, setDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
 
-  const processTree = useCallback((node: TreeNode, depth: number = 0, parent: TreeNode | null = null) => {
-    node.depth = depth
-    node.parent = parent || undefined
-
-    if (depth >= 2 && node.children) {
-      node._children = node.children
-      node.children = undefined
-    }
-
-    if (node.children) {
-      node.children.forEach(child => processTree(child, depth + 1, node))
-    }
-  }, [])
-
-  const flattenTree = useCallback((node: TreeNode, nodes: TreeNode[] = [], links: { source: string; target: string }[] = []) => {
-    nodes.push(node)
-    if (node.children) {
-      node.children.forEach(child => {
-        links.push({ source: node.id, target: child.id })
-        flattenTree(child, nodes, links)
-      })
-    }
-    return { nodes, links }
-  }, [])
-
-  const updateGraph = useCallback(() => {
-    const { nodes: flatNodes, links: flatLinks } = flattenTree(treeData)
+  const updateTree = useCallback(() => {
+    const hierarchy = d3.hierarchy(treeData)
     
-    flatNodes.forEach(node => {
-      const lines = wrapText(node.name, 150)
-      node.labelWidth = Math.max(...lines.map(line => getTextWidth(line))) + 30
-      node.labelHeight = lines.length * 20 + 10
-    })
+    const treeLayout = d3.tree<TreeNode>()
+      .nodeSize([250, 150])
+      .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth)
 
-    setNodes(flatNodes)
-    setLinks(flatLinks)
+    const newRoot = treeLayout(hierarchy)
 
-    const simulation = d3.forceSimulation(flatNodes)
-      .force("link", d3.forceLink(flatLinks).id((d: any) => d.id).distance(200))
-      .force("charge", d3.forceManyBody().strength(-1000))
-      .force("center", d3.forceCenter(0, 0))
-      .force("collision", d3.forceCollide().radius((d: TreeNode) => Math.max(d.labelWidth || 0, d.labelHeight || 0) / 2 + 30))
-      .force("x", d3.forceX().strength(0.1))
-      .force("y", d3.forceY().strength(0.1))
+    // Adjust positions to prevent label overlaps
+    const nodeRadius = 20
+    const labelPadding = 10
+    const minSeparation = 30
 
-    simulation.force("depth", (alpha: number) => {
-      flatNodes.forEach(node => {
-        if (node.depth !== undefined) {
-          node.y = (node.y || 0) + (node.depth * 200 - (node.y || 0)) * alpha
+    newRoot.each(node => {
+      if (node.parent) {
+        const siblings = node.parent.children || []
+        const index = siblings.indexOf(node)
+        if (index > 0) {
+          const prevSibling = siblings[index - 1]
+          const minY = (prevSibling.y || 0) + nodeRadius * 2 + labelPadding + minSeparation
+          if (node.y < minY) {
+            node.y = minY
+          }
         }
-      })
+      }
+      
+      // Add some randomness to x position
+      node.x += (Math.random() - 0.5) * 50
     })
 
-    simulation.on("tick", () => {
-      setNodes([...flatNodes])
-    })
-
-    return () => simulation.stop()
-  }, [flattenTree])
+    setRoot(newRoot)
+  }, [])
 
   useEffect(() => {
-    processTree(treeData)
-    updateGraph()
-  }, [processTree, updateGraph])
+    updateTree()
+  }, [updateTree])
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -345,16 +285,16 @@ export default function Component() {
     return () => window.removeEventListener('resize', updateDimensions)
   }, [])
 
-  const handleNodeClick = useCallback((clickedNode: TreeNode) => {
-    if (clickedNode._children) {
-      clickedNode.children = clickedNode._children
-      clickedNode._children = undefined
-    } else if (clickedNode.children) {
-      clickedNode._children = clickedNode.children
-      clickedNode.children = undefined
+  const handleNodeClick = useCallback((clickedNode: d3.HierarchyPointNode<TreeNode>) => {
+    if (clickedNode.children) {
+      clickedNode.data._children = clickedNode.children
+      clickedNode.children = null
+    } else if (clickedNode.data._children) {
+      clickedNode.children = clickedNode.data._children
+      clickedNode.data._children = undefined
     }
-    updateGraph()
-  }, [updateGraph])
+    updateTree()
+  }, [updateTree])
 
   const handleWheel = useCallback((event: React.WheelEvent) => {
     event.preventDefault()
@@ -380,6 +320,19 @@ export default function Component() {
     setDragging(false)
   }, [])
 
+  const handleZoomIn = useCallback(() => {
+    setScale(prevScale => Math.min(2, prevScale + 0.1))
+  }, [])
+
+  const handleZoomOut = useCallback(() => {
+    setScale(prevScale => Math.max(0.1, prevScale - 0.1))
+  }, [])
+
+  const handleReset = useCallback(() => {
+    setScale(1)
+    setTranslate({ x: 0, y: 0 })
+  }, [])
+
   useEffect(() => {
     const svg = svgRef.current
     if (svg) {
@@ -388,12 +341,13 @@ export default function Component() {
     }
   }, [handleWheel])
 
+  if (!root) return null
+
   return (
-    <div ref={containerRef} className="w-screen h-screen bg-gray-900 overflow-hidden">
+    <div ref={containerRef} className="flex flex-1 flex w-full h-full bg-gray-900 overflow-hidden relative">
       <svg
         ref={svgRef}
-        width="100%"
-        height="100%"
+        style={{flex: "1 0 auto", width: "auto", height: "auto"}}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -411,17 +365,28 @@ export default function Component() {
         <rect width="100%" height="100%" fill="url(#grid)" />
         
         <g transform={`translate(${translate.x + dimensions.width / 2},${translate.y + dimensions.height / 2}) scale(${scale})`}>
-          {links.map((link, index) => (
-            <LinkCurve key={index} link={link} />
+          {root.links().map((link, index) => (
+            <LinkLine key={`link-${index}`} link={link} />
           ))}
-          {nodes.map(node => (
-            <TreeNode key={node.id} node={node} onNodeClick={handleNodeClick} />
+          {root.descendants().map((node, index) => (
+            <TreeNode key={`node-${index}`} node={node} onNodeClick={handleNodeClick} />
           ))}
         </g>
       </svg>
       <div className="absolute top-4 left-4 text-white">
         <h1 className="text-2xl font-bold mb-2">The Tree of SRE</h1>
         <p>Explore the Site Reliability Engineering landscape</p>
+      </div>
+      <div className="absolute bottom-4 right-4 flex space-x-2">
+        <button onClick={handleZoomIn} className="bg-blue-500 text-white p-2 rounded">
+          <ZoomIn size={24} />
+        </button>
+        <button onClick={handleZoomOut} className="bg-blue-500 text-white p-2 rounded">
+          <ZoomOut size={24} />
+        </button>
+        <button onClick={handleReset} className="bg-blue-500 text-white p-2 rounded">
+          <RefreshCw size={24} />
+        </button>
       </div>
     </div>
   )
