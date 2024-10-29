@@ -5,14 +5,14 @@ import { Activity, AlertTriangle, Cloud, Code, Lock, Server, Settings, ZoomIn, Z
 import * as d3 from 'd3'
 
 interface TreeNode {
-  id: string
+  id?: string
   name: string
-  children?: TreeNode[]
-  _children?: TreeNode[]
+  children?: TreeNode[] | null
+  _children?: TreeNode[] | null
   x?: number
   y?: number
   depth?: number
-  parent?: TreeNode
+  parent?: TreeNode |  null
 }
 
 const treeData: TreeNode = {
@@ -288,9 +288,9 @@ export default function Component() {
   const handleNodeClick = useCallback((clickedNode: d3.HierarchyPointNode<TreeNode>) => {
     if (clickedNode.children) {
       clickedNode.data._children = clickedNode.children
-      clickedNode.children = null
+      clickedNode.children = undefined
     } else if (clickedNode.data._children) {
-      clickedNode.children = clickedNode.data._children
+      clickedNode.children = []
       clickedNode.data._children = undefined
     }
     updateTree()

@@ -36,7 +36,7 @@ export default function Homepage() {
                   Is It SRE?
                 </h2>
                 <p className="mx-auto max-w-[700px] text-[#A0AEC0] md:text-xl">
-                Whether you're in a job and having a mental schism or looking for SRE positions and wondering where the mention of SRE practice is, this site can help you navigate the SRE opportunities through surveys and tools.
+                Whether you&apos;re in a job and having a mental schism or looking for SRE positions and wondering where the mention of SRE practice is, this site can help you navigate the SRE opportunities through surveys and tools.
                 </p>
               </div>
               {/* <div className="w-full max-w-sm space-y-2">
@@ -103,7 +103,7 @@ export default function Homepage() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <h2 className={`text-3xl font-bold tracking-tighter sm:text-5xl ${spaceGrotesk.className}`}>What's involved in being an SRE?</h2>
+                <h2 className={`text-3xl font-bold tracking-tighter sm:text-5xl ${spaceGrotesk.className}`}>What&apos;s involved in being an SRE?</h2>
                 <p className="max-w-[900px] text-[#A0AEC0] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                   See the SRE skill tree as an interactive map.
                 </p>

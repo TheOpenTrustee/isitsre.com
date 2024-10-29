@@ -34,13 +34,13 @@ export default function Homepage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-[#A0AEC0] mb-4">
-                    IsItSRE.com was born from a simple observation: many job postings labeled as "Site Reliability Engineering" (SRE) roles don't actually align with the principles and practices of SRE.
+                    IsItSRE.com was born from a simple observation: many job postings labeled as &quot;Site Reliability Engineering&quot; (SRE) roles don&apos;t actually align with the principles and practices of SRE.
                   </p>
                   <p className="text-sm text-[#A0AEC0] mb-4">
                     The site owner shared this idea on LinkedIn:
                   </p>
                   <blockquote className="border-l-4 border-[#D97706] pl-4 italic mb-4 text-sm text-[#A0AEC0]">
-                    "I'm tempted to start a website called isitsre.com. Have it do simple keyword analysis to see if the job posting is actually an SRE job or if it has nothing to do with the activities of an SRE."
+                  &quot;I&apos;m tempted to start a website called isitsre.com. Have it do simple keyword analysis to see if the job posting is actually an SRE job or if it has nothing to do with the activities of an SRE.&quot;
                   </blockquote>
                   <p className="text-sm text-[#A0AEC0]">
                     This idea resonated with many in the SRE community despite being a joke, highlighting the need for a tool to help both job seekers and employers better understand what truly constitutes an SRE role.
@@ -50,7 +50,7 @@ export default function Homepage() {
               <Card className="bg-[#2C2C2C] border-[#3C3C3C]">
                 <CardHeader>
                   <Target className="h-8 w-8 mb-2 text-[#D97706]" />
-                  <CardTitle className="text-[#E2E8F0]">So what's the point?</CardTitle>
+                  <CardTitle className="text-[#E2E8F0]">So what&apos;s the point?</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-[#A0AEC0] mb-4">

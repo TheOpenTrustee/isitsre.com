@@ -44,8 +44,8 @@ export default function NotFound() {
         <section className="w-full py-6 md:py-12 lg:py-24">
             <div className="container text-center">
                 <h1 className={`${spaceGrotesk.className}`}>404</h1>
-                <p className={`${spaceGrotesk.className}`}>Oops! The page you're looking for doesn't exist.</p>
-                <p className={`${spaceGrotesk.className}`}>It seems you've ventured into uncharted territory.</p>
+                <p className={`${spaceGrotesk.className}`}>Oops! The page you&apos;re looking for doesn&apos;t exist.</p>
+                <p className={`${spaceGrotesk.className}`}>It seems you&apos;ve ventured into uncharted territory.</p>
                 <p className={`${spaceGrotesk.className}`}><Link href="/">Return to the homepage</Link></p>
             </div>
         </section>
