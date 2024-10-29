@@ -1,18 +1,20 @@
 'use client'
 
 import React, { useState, useCallback, useEffect, useRef } from 'react'
-import { Activity, AlertTriangle, Cloud, Code, Lock, Server, Settings } from 'lucide-react'
+import { Activity, AlertTriangle, Cloud, Code, Lock, Server, Settings, ChevronRight } from 'lucide-react'
 import * as d3 from 'd3'
 
 interface TreeNode extends d3.SimulationNodeDatum {
   id: string
   name: string
   children?: TreeNode[]
+  _children?: TreeNode[]
   x?: number
   y?: number
   labelWidth?: number
   labelHeight?: number
   depth?: number
+  parent?: TreeNode
 }
 
 const treeData: TreeNode = {
@@ -203,13 +205,13 @@ const getTextWidth = (text: string) => {
   return 0
 }
 
-const TreeNode: React.FC<{ node: TreeNode }> = ({ node }) => {
+const TreeNode: React.FC<{ node: TreeNode; onNodeClick: (node: TreeNode) => void }> = ({ node, onNodeClick }) => {
   const IconComponent = getNodeIcon(node.name)
   const lines = wrapText(node.name, 150)
   const lineHeight = 20
 
   return (
-    <g transform={`translate(${node.x},${node.y})`}>
+    <g transform={`translate(${node.x},${node.y})`} onClick={() => onNodeClick(node)} style={{ cursor: 'pointer' }}>
       <circle r={15} fill="#FF6B6B" />
       <foreignObject width={20} height={20} x={-10} y={-10}>
         <div className="flex items-center justify-center w-full h-full">
@@ -221,6 +223,12 @@ const TreeNode: React.FC<{ node: TreeNode }> = ({ node }) => {
           {line}
         </text>
       ))}
+      {node._children && (
+        <g transform="translate(15, 15)">
+          <circle r={10} fill="#4A5568" />
+          <ChevronRight size={16} color="white" style={{ transform: 'translate(-8px, -8px)' }} />
+        </g>
+      )}
     </g>
   )
 }
@@ -256,6 +264,71 @@ export default function Component() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
 
+  const processTree = useCallback((node: TreeNode, depth: number = 0, parent: TreeNode | null = null) => {
+    node.depth = depth
+    node.parent = parent || undefined
+
+    if (depth >= 2 && node.children) {
+      node._children = node.children
+      node.children = undefined
+    }
+
+    if (node.children) {
+      node.children.forEach(child => processTree(child, depth + 1, node))
+    }
+  }, [])
+
+  const flattenTree = useCallback((node: TreeNode, nodes: TreeNode[] = [], links: { source: string; target: string }[] = []) => {
+    nodes.push(node)
+    if (node.children) {
+      node.children.forEach(child => {
+        links.push({ source: node.id, target: child.id })
+        flattenTree(child, nodes, links)
+      })
+    }
+    return { nodes, links }
+  }, [])
+
+  const updateGraph = useCallback(() => {
+    const { nodes: flatNodes, links: flatLinks } = flattenTree(treeData)
+    
+    flatNodes.forEach(node => {
+      const lines = wrapText(node.name, 150)
+      node.labelWidth = Math.max(...lines.map(line => getTextWidth(line))) + 30
+      node.labelHeight = lines.length * 20 + 10
+    })
+
+    setNodes(flatNodes)
+    setLinks(flatLinks)
+
+    const simulation = d3.forceSimulation(flatNodes)
+      .force("link", d3.forceLink(flatLinks).id((d: any) => d.id).distance(200))
+      .force("charge", d3.forceManyBody().strength(-1000))
+      .force("center", d3.forceCenter(0, 0))
+      .force("collision", d3.forceCollide().radius((d: TreeNode) => Math.max(d.labelWidth || 0, d.labelHeight || 0) / 2 + 30))
+      .force("x", d3.forceX().strength(0.1))
+      .force("y", d3.forceY().strength(0.1))
+
+    simulation.force("depth", (alpha: number) => {
+      flatNodes.forEach(node => {
+        if (node.depth !== undefined) {
+          node.y = (node.y || 0) + (node.depth * 200 - (node.y || 0)) * alpha
+        }
+      })
+    })
+
+    simulation.on("tick", () => {
+      setNodes([...flatNodes])
+    })
+
+    return () => simulation.stop()
+  }, [flattenTree])
+
+  useEffect(() => {
+    processTree(treeData)
+    updateGraph()
+  }, [processTree, updateGraph])
+
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
@@ -272,53 +345,16 @@ export default function Component() {
     return () => window.removeEventListener('resize', updateDimensions)
   }, [])
 
-  useEffect(() => {
-    const flattenTree = (node: TreeNode, nodes: TreeNode[] = [], links: { source: string; target: string }[] = [], depth = 0) => {
-      node.depth = depth
-      nodes.push(node)
-      if (node.children) {
-        node.children.forEach(child => {
-          links.push({ source: node.id, target: child.id })
-          flattenTree(child, nodes, links, depth + 1)
-        })
-      }
-      return { nodes, links }
+  const handleNodeClick = useCallback((clickedNode: TreeNode) => {
+    if (clickedNode._children) {
+      clickedNode.children = clickedNode._children
+      clickedNode._children = undefined
+    } else if (clickedNode.children) {
+      clickedNode._children = clickedNode.children
+      clickedNode.children = undefined
     }
-
-    const { nodes: flatNodes, links: flatLinks } = flattenTree(treeData)
-    
-    flatNodes.forEach(node => {
-      const lines = wrapText(node.name, 150)
-      node.labelWidth = Math.max(...lines.map(line => getTextWidth(line))) + 30
-      node.labelHeight = lines.length * 20 + 10
-    })
-
-    setNodes(flatNodes)
-    setLinks(flatLinks)
-
-    const simulation = d3.forceSimulation(flatNodes)
-      .force("link", d3.forceLink(flatLinks).id((d: any) => d.id).distance(20))
-      .force("charge", d3.forceManyBody().strength(-2500))
-      .force("center", d3.forceCenter(0, 0))
-      .force("collision", d3.forceCollide().radius((d: TreeNode) => Math.max(d.labelWidth || 0, d.labelHeight || 0) / 2 + 50))
-      .force("x", d3.forceX().strength(0.1))
-      .force("y", d3.forceY().strength(0.1))
-
-    // Custom force to separate nodes based on their depth
-    simulation.force("depth", (alpha: number) => {
-      flatNodes.forEach(node => {
-        if (node.depth !== undefined) {
-          node.y = (node.y || 0) + (node.depth * 200 - (node.y || 0)) * alpha
-        }
-      })
-    })
-
-    simulation.on("tick", () => {
-      setNodes([...flatNodes])
-    })
-
-    return () => simulation.stop()
-  }, [])
+    updateGraph()
+  }, [updateGraph])
 
   const handleWheel = useCallback((event: React.WheelEvent) => {
     event.preventDefault()
@@ -373,12 +409,13 @@ export default function Component() {
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#grid)" />
+        
         <g transform={`translate(${translate.x + dimensions.width / 2},${translate.y + dimensions.height / 2}) scale(${scale})`}>
           {links.map((link, index) => (
             <LinkCurve key={index} link={link} />
           ))}
           {nodes.map(node => (
-            <TreeNode key={node.id} node={node} />
+            <TreeNode key={node.id} node={node} onNodeClick={handleNodeClick} />
           ))}
         </g>
       </svg>
