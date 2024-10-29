@@ -184,10 +184,10 @@ const TreeNode: React.FC<{ node: d3.HierarchyPointNode<TreeNode>; onNodeClick: (
       onClick={() => isClickable && onNodeClick(node)}
       style={{ cursor: isClickable ? 'pointer' : 'default' }}
     >
-      <circle r={isRoot ? 30 : 20} fill="#FF6B6B" />
+      <circle r={isRoot ? 30 : 20} stroke="#D97706" stroke-width="2" fill="#2C2C2C" />
       <foreignObject width={isRoot ? 50 : 30} height={isRoot ? 50 : 30} x={isRoot ? -25 : -15} y={isRoot ? -25 : -15}>
         <div className="flex items-center justify-center w-full h-full">
-          <IconComponent size={isRoot ? 30 : 20} color="#1a202c" />
+          <IconComponent size={isRoot ? 30 : 20} color="#D97706" />
         </div>
       </foreignObject>
       <text
@@ -215,7 +215,7 @@ const LinkLine: React.FC<{ link: d3.HierarchyPointLink<TreeNode> }> = ({ link })
     <path
       d={`M${sourceX},${sourceY} L${targetX},${targetY}`}
       fill="none"
-      stroke="#FF6B6B"
+      stroke="#D97706"
       strokeWidth={2}
     />
   )
@@ -344,7 +344,7 @@ export default function Component() {
   if (!root) return null
 
   return (
-    <div ref={containerRef} className="flex-1 flex w-full h-full bg-gray-900 overflow-hidden relative">
+    <div ref={containerRef} className="flex-1 flex w-full h-full bg-[#2C2C2C] overflow-hidden relative">
       <svg
         ref={svgRef}
         style={{flex: "1 0 auto", width: "auto", height: "auto"}}
