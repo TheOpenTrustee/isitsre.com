@@ -1,224 +1,267 @@
-"use client"
+'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
-import { ZoomIn, ZoomOut, RotateCcw, Settings, Eye, Database, BarChart, Activity, GitMerge, Zap, Cloud, Box, Network, Shield, AlertTriangle, Clock, FileCode, Search, Bell, Target, FileText, Phone, Server, Lock, BookOpen, Users, Globe } from 'lucide-react'
-import { FaAws, FaGoogle, FaMicrosoft, FaDocker, FaJenkins, FaGitlab, FaUserSecret, FaBalanceScale } from 'react-icons/fa'
-import { SiKubernetes, SiTerraform, SiAnsible, SiElasticsearch } from 'react-icons/si'
-import { Roboto } from 'next/font/google'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
+import { Activity, AlertTriangle, Cloud, Code, Lock, Server, Settings } from 'lucide-react'
+import * as d3 from 'd3'
 
-const roboto = Roboto({
-  weight: ['400', '700'],
-  subsets: ['latin'],
-  display: 'swap',
-})
-
-interface TreeNode {
+interface TreeNode extends d3.SimulationNodeDatum {
   id: string
-  label: string
-  icon: React.ReactNode
+  name: string
   children?: TreeNode[]
+  x?: number
+  y?: number
+  labelWidth?: number
+  labelHeight?: number
+  depth?: number
 }
 
 const treeData: TreeNode = {
-    id: 'sre',
-    label: 'SRE',
-    icon: <Settings />,
-    children: [
-      {
-        id: 'observability',
-        label: 'Observability',
-        icon: <Eye />,
-        children: [
-          {
-            id: 'telemetry',
-            label: 'Telemetry',
-            icon: <Activity />,
-            children: [
-              { id: 'data-engineering', label: 'Data Engineering', icon: <Database /> },
-              { id: 'metrics-collection', label: 'Metrics Collection', icon: <BarChart /> },
-              { id: 'distributed-tracing', label: 'Distributed Tracing', icon: <GitMerge /> }
-            ]
-          },
-          {
-            id: 'logging',
-            label: 'Logging',
-            icon: <FileText />,
-            children: [
-              { id: 'log-aggregation', label: 'Log Aggregation', icon: <Database /> },
-              { id: 'log-analysis', label: 'Log Analysis', icon: <Search /> },
-              { id: 'elk-stack', label: 'ELK Stack', icon: <SiElasticsearch /> }
-            ]
-          },
-          {
-            id: 'monitoring',
-            label: 'Monitoring',
-            icon: <Activity />,
-            children: [
-              { id: 'alerting', label: 'Alerting', icon: <Bell /> },
-              { id: 'slis', label: 'Service Level Indicators (SLIs)', icon: <Target /> },
-              { id: 'slos', label: 'Service Level Objectives (SLOs)', icon: <Target /> }
-            ]
-          }
-        ]
-      },
-      {
-        id: 'incident-management',
-        label: 'Incident Management',
-        icon: <AlertTriangle />,
-        children: [
-          {
-            id: 'postmortems',
-            label: 'Postmortems',
-            icon: <FileText />,
-            children: [
-              { id: 'root-cause-analysis', label: 'Root Cause Analysis', icon: <Search /> },
-              { id: 'blameless-culture', label: 'Blameless Culture', icon: <Users /> }
-            ]
-          },
-          {
-            id: 'on-call-management',
-            label: 'On-call Management',
-            icon: <Phone />,
-            children: [
-              { id: 'rotations', label: 'Rotations', icon: <Clock /> },
-              { id: 'escalation-policies', label: 'Escalation Policies', icon: <GitMerge /> }
-            ]
-          }
-        ]
-      },
-      {
-        id: 'infrastructure',
-        label: 'Infrastructure',
-        icon: <Server />,
-        children: [
-          {
-            id: 'cloud-providers',
-            label: 'Cloud Providers',
-            icon: <Cloud />,
-            children: [
-              { id: 'aws', label: 'AWS', icon: <FaAws /> },
-              { id: 'gcp', label: 'GCP', icon: <FaGoogle /> },
-              { id: 'azure', label: 'Azure', icon: <FaMicrosoft /> }
-            ]
-          },
-          {
-            id: 'containerization',
-            label: 'Containerization',
-            icon: <Box />,
-            children: [
-              { id: 'docker', label: 'Docker', icon: <FaDocker /> },
-              { id: 'kubernetes', label: 'Kubernetes', icon: <SiKubernetes /> }
-            ]
-          },
-          {
-            id: 'networking',
-            label: 'Networking',
-            icon: <Network />,
-            children: [
-              { id: 'load-balancers', label: 'Load Balancers', icon: <Server /> },
-              { id: 'cdns', label: 'CDNs', icon: <Globe /> },
-              { id: 'dns-management', label: 'DNS Management', icon: <Server /> }
-            ]
-          }
-        ]
-      },
-      {
-        id: 'automation',
-        label: 'Automation',
-        icon: <Zap />,
-        children: [
-          {
-            id: 'infrastructure-as-code',
-            label: 'Infrastructure as Code',
-            icon: <FileCode />,
-            children: [
-              { id: 'terraform', label: 'Terraform', icon: <SiTerraform /> },
-              { id: 'ansible', label: 'Ansible', icon: <SiAnsible /> }
-            ]
-          },
-          {
-            id: 'ci-cd',
-            label: 'Continuous Integration/Continuous Deployment (CI/CD)',
-            icon: <GitMerge />,
-            children: [
-              { id: 'jenkins', label: 'Jenkins', icon: <FaJenkins /> },
-              { id: 'gitlab-ci', label: 'GitLab CI', icon: <FaGitlab /> }
-            ]
-          }
-        ]
-      },
-      {
-        id: 'security',
-        label: 'Security',
-        icon: <Shield />,
-        children: [
-          {
-            id: 'incident-response',
-            label: 'Incident Response',
-            icon: <AlertTriangle />,
-            children: [
-              { id: 'threat-modeling', label: 'Threat Modeling', icon: <Shield /> },
-              { id: 'vulnerability-management', label: 'Vulnerability Management', icon: <Lock /> }
-            ]
-          },
-          {
-            id: 'compliance',
-            label: 'Compliance',
-            icon: <FileText />,
-            children: [
-              { id: 'gdpr', label: 'GDPR', icon: <FaUserSecret /> },
-              { id: 'soc-2', label: 'SOC 2', icon: <FaBalanceScale /> }
-            ]
-          }
-        ]
-      }
-    ]
-  }
-  
+  id: "root",
+  name: "SRE",
+  children: [
+    {
+      id: "observability",
+      name: "Observability",
+      children: [
+        {
+          id: "telemetry",
+          name: "Telemetry",
+          children: [
+            { id: "data-engineering", name: "Data Engineering" },
+            { id: "metrics-collection", name: "Metrics Collection" },
+            { id: "distributed-tracing", name: "Distributed Tracing" }
+          ]
+        },
+        {
+          id: "logging",
+          name: "Logging",
+          children: [
+            { id: "log-aggregation", name: "Log Aggregation" },
+            { id: "log-analysis", name: "Log Analysis" },
+            { id: "elk-stack", name: "ELK Stack" }
+          ]
+        },
+        {
+          id: "monitoring",
+          name: "Monitoring",
+          children: [
+            { id: "alerting", name: "Alerting" },
+            { id: "slis", name: "Service Level Indicators (SLIs)" },
+            { id: "slos", name: "Service Level Objectives (SLOs)" }
+          ]
+        }
+      ]
+    },
+    {
+      id: "incident-management",
+      name: "Incident Management",
+      children: [
+        {
+          id: "postmortems",
+          name: "Postmortems",
+          children: [
+            { id: "root-cause-analysis", name: "Root Cause Analysis" },
+            { id: "blameless-culture", name: "Blameless Culture" }
+          ]
+        },
+        {
+          id: "on-call-management",
+          name: "On-call Management",
+          children: [
+            { id: "rotations", name: "Rotations" },
+            { id: "escalation-policies", name: "Escalation Policies" }
+          ]
+        }
+      ]
+    },
+    {
+      id: "infrastructure",
+      name: "Infrastructure",
+      children: [
+        {
+          id: "cloud-providers",
+          name: "Cloud Providers",
+          children: [
+            { id: "aws", name: "AWS" },
+            { id: "gcp", name: "GCP" },
+            { id: "azure", name: "Azure" }
+          ]
+        },
+        {
+          id: "containerization",
+          name: "Containerization",
+          children: [
+            { id: "docker", name: "Docker" },
+            { id: "kubernetes", name: "Kubernetes" }
+          ]
+        },
+        {
+          id: "networking",
+          name: "Networking",
+          children: [
+            { id: "load-balancers", name: "Load Balancers" },
+            { id: "cdns", name: "CDNs" },
+            { id: "dns-management", name: "DNS Management" }
+          ]
+        }
+      ]
+    },
+    {
+      id: "automation",
+      name: "Automation",
+      children: [
+        {
+          id: "infrastructure-as-code",
+          name: "Infrastructure as Code",
+          children: [
+            { id: "terraform", name: "Terraform" },
+            { id: "ansible", name: "Ansible" }
+          ]
+        },
+        {
+          id: "ci-cd",
+          name: "Continuous Integration/Continuous Deployment (CI/CD)",
+          children: [
+            { id: "jenkins", name: "Jenkins" },
+            { id: "gitlab-ci", name: "GitLab CI" }
+          ]
+        }
+      ]
+    },
+    {
+      id: "security",
+      name: "Security",
+      children: [
+        {
+          id: "incident-response",
+          name: "Incident Response",
+          children: [
+            { id: "threat-modeling", name: "Threat Modeling" },
+            { id: "vulnerability-management", name: "Vulnerability Management" }
+          ]
+        },
+        {
+          id: "compliance",
+          name: "Compliance",
+          children: [
+            { id: "gdpr", name: "GDPR" },
+            { id: "soc2", name: "SOC 2" }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
-const TreeNodeLabels: React.FC<{ node: TreeNode; x: number; y: number }> = ({ node, x, y }) => {
-  const verticalLineLength = 60
-  const labelOffset = verticalLineLength / 2 + 12 // Half of verticalLineLength plus circleRadius
+const getNodeIcon = (nodeName: string) => {
+  switch (nodeName) {
+    case 'SRE':
+      return Settings
+    case 'Observability':
+      return Activity
+    case 'Incident Management':
+      return AlertTriangle
+    case 'Infrastructure':
+      return Server
+    case 'Automation':
+      return Code
+    case 'Security':
+      return Lock
+    default:
+      return Cloud
+  }
+}
+
+const wrapText = (text: string, maxWidth: number) => {
+  const words = text.split(' ')
+  const lines: string[] = []
+  let currentLine = words[0]
+
+  for (let i = 1; i < words.length; i++) {
+    const word = words[i]
+    const width = getTextWidth(currentLine + " " + word)
+    if (width < maxWidth) {
+      currentLine += " " + word
+    } else {
+      lines.push(currentLine)
+      currentLine = word
+    }
+  }
+  lines.push(currentLine)
+  return lines
+}
+
+const getTextWidth = (text: string) => {
+  if (typeof document !== 'undefined') {
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')
+    if (context) {
+      context.font = '14px Arial'
+      return context.measureText(text).width
+    }
+  }
+  return 0
+}
+
+const TreeNode: React.FC<{ node: TreeNode }> = ({ node }) => {
+  const IconComponent = getNodeIcon(node.name)
+  const lines = wrapText(node.name, 150)
+  const lineHeight = 20
 
   return (
-    <g>
-      <foreignObject x={x - 60} y={y + labelOffset} width={120} height={20}>
-        <div className={`${roboto.className} bg-[#0A0A0A] px-1 py-1 rounded text-center flex items-center justify-center h-full`}>
-          <span className="text-xs text-[#E2E8F0] leading-none uppercase font-bold">{node.label}</span>
+    <g transform={`translate(${node.x},${node.y})`}>
+      <circle r={15} fill="#FF6B6B" />
+      <foreignObject width={20} height={20} x={-10} y={-10}>
+        <div className="flex items-center justify-center w-full h-full">
+          <IconComponent size={16} color="#1a202c" />
         </div>
       </foreignObject>
-      {node.children?.map((child, index) => {
-        if (!node.children) {
-            return null
-        }
-        const childX = x + (index - (node.children.length - 1) / 2) * 200
-        const childY = y + 180
-        return (
-          <TreeNodeLabels
-            key={child.id}
-            node={child}
-            x={childX}
-            y={childY}
-          />
-        )
-      })}
+      {lines.map((line, index) => (
+        <text key={index} fill="white" x={25} y={5 + index * lineHeight} style={{ fontSize: '14px' }}>
+          {line}
+        </text>
+      ))}
     </g>
   )
 }
 
-export default function SRETree() {
-  const [hoveredNode, setHoveredNode] = useState('')
-  const [dimensions, setDimensions] = useState({ width: 1200, height: 800 })
+const LinkCurve: React.FC<{ link: d3.SimulationLinkDatum<TreeNode> }> = ({ link }) => {
+  const source = link.source as TreeNode
+  const target = link.target as TreeNode
+
+  if (!source.x || !source.y || !target.x || !target.y) return null
+
+  const dx = target.x - source.x
+  const dy = target.y - source.y
+  const dr = Math.sqrt(dx * dx + dy * dy)
+
+  return (
+    <path
+      d={`M${source.x},${source.y}A${dr},${dr} 0 0,1 ${target.x},${target.y}`}
+      fill="none"
+      stroke="#FF6B6B"
+      strokeWidth={2}
+    />
+  )
+}
+
+export default function Component() {
+  const [nodes, setNodes] = useState<TreeNode[]>([])
+  const [links, setLinks] = useState<d3.SimulationLinkDatum<TreeNode>[]>([])
+  const [translate, setTranslate] = useState({ x: 0, y: 0 })
+  const [scale, setScale] = useState(0.5)
+  const svgRef = useRef<SVGSVGElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [dragging, setDragging] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
 
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
         setDimensions({
           width: containerRef.current.clientWidth,
-          height: containerRef.current.clientHeight,
+          height: containerRef.current.clientHeight
         })
       }
     }
@@ -229,131 +272,120 @@ export default function SRETree() {
     return () => window.removeEventListener('resize', updateDimensions)
   }, [])
 
-  const TreeNode: React.FC<{ node: TreeNode; x: number; y: number; onHover: (id: string) => void; isRoot?: boolean; isLeaf?: boolean }> = ({
-    node,
-    x,
-    y,
-    onHover,
-    isRoot = false,
-    isLeaf = false,
-  }) => {
-    const verticalLineLength = 60
-    const childrenSpacing = 200
-    const levelSpacing = 180
-    const circleRadius = 12
+  useEffect(() => {
+    const flattenTree = (node: TreeNode, nodes: TreeNode[] = [], links: { source: string; target: string }[] = [], depth = 0) => {
+      node.depth = depth
+      nodes.push(node)
+      if (node.children) {
+        node.children.forEach(child => {
+          links.push({ source: node.id, target: child.id })
+          flattenTree(child, nodes, links, depth + 1)
+        })
+      }
+      return { nodes, links }
+    }
 
-    return (
-      <g>
-        {!isRoot && (
-          <line
-            x1={x}
-            y1={y - verticalLineLength}
-            x2={x}
-            y2={y - circleRadius}
-            stroke="#D97706"
-            strokeWidth={2}
-          />
-        )}
-        <circle
-          cx={x}
-          cy={y}
-          r={circleRadius}
-          fill="none"
-          stroke="#D97706"
-          strokeWidth={2}
-          onMouseEnter={() => onHover(node.id)}
-          onMouseLeave={() => onHover('')}
-        />
-        <foreignObject x={x - 8} y={y - 8} width={16} height={16}>
-          <div className="flex items-center justify-center w-full h-full text-white">
-            {node.icon}
-          </div>
-        </foreignObject>
-        {!isLeaf && (
-          <line
-            x1={x}
-            y1={y + circleRadius}
-            x2={x}
-            y2={y + verticalLineLength}
-            stroke="#D97706"
-            strokeWidth={2}
-          />
-        )}
-        {node.children?.map((child, index) => {
-            if (!node.children) {
-                return null
-            }
-          const childX = x + (index - (node.children.length - 1) / 2) * childrenSpacing
-          const childY = y + levelSpacing
-          const isChildLeaf = !child.children || child.children.length === 0
-          return (
-            <React.Fragment key={child.id}>
-              <line
-                x1={x}
-                y1={y + verticalLineLength}
-                x2={childX}
-                y2={childY - verticalLineLength}
-                stroke="#D97706"
-                strokeWidth={2}
-              />
-              <TreeNode
-                node={child}
-                x={childX}
-                y={childY}
-                onHover={onHover}
-                isLeaf={isChildLeaf}
-              />
-            </React.Fragment>
-          )
-        })}
-      </g>
-    )
-  }
+    const { nodes: flatNodes, links: flatLinks } = flattenTree(treeData)
+    
+    flatNodes.forEach(node => {
+      const lines = wrapText(node.name, 150)
+      node.labelWidth = Math.max(...lines.map(line => getTextWidth(line))) + 30
+      node.labelHeight = lines.length * 20 + 10
+    })
+
+    setNodes(flatNodes)
+    setLinks(flatLinks)
+
+    const simulation = d3.forceSimulation(flatNodes)
+      .force("link", d3.forceLink(flatLinks).id((d: any) => d.id).distance(20))
+      .force("charge", d3.forceManyBody().strength(-2500))
+      .force("center", d3.forceCenter(0, 0))
+      .force("collision", d3.forceCollide().radius((d: TreeNode) => Math.max(d.labelWidth || 0, d.labelHeight || 0) / 2 + 50))
+      .force("x", d3.forceX().strength(0.1))
+      .force("y", d3.forceY().strength(0.1))
+
+    // Custom force to separate nodes based on their depth
+    simulation.force("depth", (alpha: number) => {
+      flatNodes.forEach(node => {
+        if (node.depth !== undefined) {
+          node.y = (node.y || 0) + (node.depth * 200 - (node.y || 0)) * alpha
+        }
+      })
+    })
+
+    simulation.on("tick", () => {
+      setNodes([...flatNodes])
+    })
+
+    return () => simulation.stop()
+  }, [])
+
+  const handleWheel = useCallback((event: React.WheelEvent) => {
+    event.preventDefault()
+    const scaleChange = event.deltaY * -0.001
+    setScale(prevScale => Math.max(0.1, Math.min(2, prevScale + scaleChange)))
+  }, [])
+
+  const handleMouseDown = useCallback((event: React.MouseEvent) => {
+    setDragging(true)
+    setDragStart({ x: event.clientX, y: event.clientY })
+  }, [])
+
+  const handleMouseMove = useCallback((event: React.MouseEvent) => {
+    if (dragging) {
+      const dx = event.clientX - dragStart.x
+      const dy = event.clientY - dragStart.y
+      setTranslate(prev => ({ x: prev.x + dx, y: prev.y + dy }))
+      setDragStart({ x: event.clientX, y: event.clientY })
+    }
+  }, [dragging, dragStart])
+
+  const handleMouseUp = useCallback(() => {
+    setDragging(false)
+  }, [])
+
+  useEffect(() => {
+    const svg = svgRef.current
+    if (svg) {
+      svg.addEventListener('wheel', handleWheel as any)
+      return () => svg.removeEventListener('wheel', handleWheel as any)
+    }
+  }, [handleWheel])
 
   return (
-    <div ref={containerRef} className={`w-screen h-screen bg-[#0A0A0A] relative overflow-hidden ${roboto.className}`}>
-      <TransformWrapper
-        initialScale={1}
-        minScale={0.5}
-        maxScale={2}
-        centerOnInit={true}
-        wheel={{ step: 0.1 }}
-        pinch={{ step: 5 }}
+    <div ref={containerRef} className="w-screen h-screen bg-gray-900 overflow-hidden">
+      <svg
+        ref={svgRef}
+        width="100%"
+        height="100%"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
       >
-        {({ zoomIn, zoomOut, resetTransform }) => (
-          <>
-            <div className="absolute top-4 right-4 flex flex-col space-y-2 z-10">
-              <button onClick={() => zoomIn()} className="bg-[#1C1C1C] text-white p-2 rounded hover:bg-[#2C2C2C]" aria-label="Zoom In">
-                <ZoomIn size={24} />
-              </button>
-              <button onClick={() => zoomOut()} className="bg-[#1C1C1C] text-white p-2 rounded hover:bg-[#2C2C2C]" aria-label="Zoom Out">
-                <ZoomOut size={24} />
-              </button>
-              <button onClick={() => resetTransform()} className="bg-[#1C1C1C] text-white p-2 rounded hover:bg-[#2C2C2C]" aria-label="Reset Zoom">
-                <RotateCcw size={24} />
-              </button>
-            </div>
-            <TransformComponent wrapperClass="!w-full !h-full">
-              <svg width={dimensions.width} height={dimensions.height} viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}>
-                <rect width="100%" height="100%" fill="#0A0A0A" />
-                <g transform={`translate(${dimensions.width / 2}, 100)`}>
-                  <TreeNode node={treeData} x={0} y={0} onHover={setHoveredNode} isRoot={true} />
-                  <TreeNodeLabels node={treeData} x={0} y={0} />
-                </g>
-              </svg>
-            </TransformComponent>
-          </>
-        )}
-      </TransformWrapper>
-      {hoveredNode && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="absolute bottom-4 left-4 bg-[#1C1C1C] text-[#E2E8F0] px-4 py-2 rounded"
-        >
-          Selected: {hoveredNode}
-        </motion.div>
-      )}
+        <defs>
+          <pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#2D3748" strokeWidth="0.5" />
+          </pattern>
+          <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+            <rect width="100" height="100" fill="url(#smallGrid)" />
+            <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#2D3748" strokeWidth="1" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)" />
+        <g transform={`translate(${translate.x + dimensions.width / 2},${translate.y + dimensions.height / 2}) scale(${scale})`}>
+          {links.map((link, index) => (
+            <LinkCurve key={index} link={link} />
+          ))}
+          {nodes.map(node => (
+            <TreeNode key={node.id} node={node} />
+          ))}
+        </g>
+      </svg>
+      <div className="absolute top-4 left-4 text-white">
+        <h1 className="text-2xl font-bold mb-2">The Tree of SRE</h1>
+        <p>Explore the Site Reliability Engineering landscape</p>
+      </div>
     </div>
   )
 }

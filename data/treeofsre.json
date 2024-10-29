@@ -1,0 +1,119 @@
+{
+  "name": "SRE",
+  "children": [
+    {
+      "name": "Observability",
+      "children": [
+        {
+          "name": "Telemetry",
+          "children": [
+            { "name": "Data Engineering" },
+            { "name": "Metrics Collection" },
+            { "name": "Distributed Tracing" }
+          ]
+        },
+        {
+          "name": "Logging",
+          "children": [
+            { "name": "Log Aggregation" },
+            { "name": "Log Analysis" },
+            { "name": "ELK Stack" }
+          ]
+        },
+        {
+          "name": "Monitoring",
+          "children": [
+            { "name": "Alerting" },
+            { "name": "Service Level Indicators (SLIs)" },
+            { "name": "Service Level Objectives (SLOs)" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Incident Management",
+      "children": [
+        {
+          "name": "Postmortems",
+          "children": [
+            { "name": "Root Cause Analysis" },
+            { "name": "Blameless Culture" }
+          ]
+        },
+        {
+          "name": "On-call Management",
+          "children": [
+            { "name": "Rotations" },
+            { "name": "Escalation Policies" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Infrastructure",
+      "children": [
+        {
+          "name": "Cloud Providers",
+          "children": [
+            { "name": "AWS" },
+            { "name": "GCP" },
+            { "name": "Azure" }
+          ]
+        },
+        {
+          "name": "Containerization",
+          "children": [
+            { "name": "Docker" },
+            { "name": "Kubernetes" }
+          ]
+        },
+        {
+          "name": "Networking",
+          "children": [
+            { "name": "Load Balancers" },
+            { "name": "CDNs" },
+            { "name": "DNS Management" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Automation",
+      "children": [
+        {
+          "name": "Infrastructure as Code",
+          "children": [
+            { "name": "Terraform" },
+            { "name": "Ansible" }
+          ]
+        },
+        {
+          "name": "Continuous Integration/Continuous Deployment (CI/CD)",
+          "children": [
+            { "name": "Jenkins" },
+            { "name": "GitLab CI" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Security",
+      "children": [
+        {
+          "name": "Incident Response",
+          "children": [
+            { "name": "Threat Modeling" },
+            { "name": "Vulnerability Management" }
+          ]
+        },
+        {
+          "name": "Compliance",
+          "children": [
+            { "name": "GDPR" },
+            { "name": "SOC 2" }
+          ]
+        }
+      ]
+    }
+  ]
+}
