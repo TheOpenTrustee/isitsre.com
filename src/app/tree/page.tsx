@@ -344,7 +344,7 @@ export default function Component() {
   if (!root) return null
 
   return (
-    <div ref={containerRef} className="flex flex-1 flex w-full h-full bg-gray-900 overflow-hidden relative">
+    <div ref={containerRef} className="flex-1 flex w-full h-full bg-gray-900 overflow-hidden relative">
       <svg
         ref={svgRef}
         style={{flex: "1 0 auto", width: "auto", height: "auto"}}
