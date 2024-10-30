@@ -2,6 +2,8 @@ import { Inter, Space_Grotesk } from 'next/font/google'
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { BookOpen } from 'lucide-react'
+import { GoogleTagManager } from '@next/third-parties/google'
+
 
 import '@/styles/globals.css'
 
@@ -58,6 +60,7 @@ export default function RootLayout({
             </Link> */}
           </nav>
         </footer>
+        <GoogleTagManager gtmId={""} />
       </body>
     </html>
   )
