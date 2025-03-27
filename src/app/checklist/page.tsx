@@ -20,18 +20,53 @@ const questions = [
   },
   {
     id: 3,
-    text: "Are there responsibilities related to monitoring system performance and reliability?",
+    text: "Are there responsibilities related to monitoring a system's performance and reliability?",
     options: ["Yes", "No", "Unclear"]
   },
   {
     id: 4,
-    text: "Does the posting mention automation of operational tasks?",
+    text: "Does the posting mention automation of operational tasks or reducing toil?",
     options: ["Yes", "No", "Not explicitly stated"]
   },
   {
     id: 5,
-    text: "Is there a focus on scalability and performance optimization?",
+    text: "Is there an emphasis on scalability or performance optimization?",
     options: ["Yes", "No", "Not emphasized"]
+  },
+  {
+    id: 6,
+    text: "Is there mention of identifying service level indicators or helping to develop service level objectives?",
+    options: ["Yes", "No", "Not mentioned"]
+  },
+  {
+    id: 7,
+    text: "Are any of the technologies or skills listed in the isitsre.com skill tree mentioned?",
+    options: ["Yes", "No", "Not mentioned"]
+  },
+  {
+    id: 8,
+    text: "Is there a set of responsibilities around managing the reliability of a service or educating teams about it?",
+    options: ["Yes", "No", "Not mentioned"]
+  },
+  {
+    id: 9,
+    text: "Is there mention of being on-call or adhering to an error budget?",
+    options: ["Yes", "No", "Not mentioned"]
+  },
+  {
+    id: 10,
+    text: "Does the posting list a requirement to perform post mortem analysis or root cause analysis?",
+    options: ["Yes", "No", "Not mentioned"]
+  },
+  {
+    id: 11,
+    text: "Is there a mention of NOT owning development of features whose stakeholders are customers?",
+    options: ["Yes", "No", "Owning features mentioned"]
+  },
+  {
+    id: 12,
+    text: "Does the post make a reference to the SRE book by google in a negative light (e.g. no one actually follows the SRE book)?",
+    options: ["Yes", "No", "Not mentioned"]
   }
 ]
 
