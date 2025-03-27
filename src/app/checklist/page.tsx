@@ -65,7 +65,7 @@ const questions = [
   },
   {
     id: 12,
-    text: "Does the post make a reference to the SRE book by google in a negative light (e.g. no one actually follows the SRE book)?",
+    text: "Does the post make a reference to the SRE book by google in a positive light (e.g. we strive towards the level of SRE in the google book)?",
     options: ["Yes", "No", "Not mentioned"]
   }
 ]
