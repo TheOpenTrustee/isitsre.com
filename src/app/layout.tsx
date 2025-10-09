@@ -40,6 +40,9 @@ export default function RootLayout({
             <Link className="text-sm font-medium hover:text-[#D97706]" href="/tree">
               Tree of SRE
             </Link>
+            <Link className="text-sm font-medium hover:text-[#D97706]" href="/coverage">
+              Coverage Map
+            </Link>
             {/* <Link className="text-sm font-medium hover:text-[#D97706]" href="/recruiters">
               Recruiters
             </Link>
